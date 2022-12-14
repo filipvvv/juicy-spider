@@ -10,12 +10,13 @@ async function main() {
 
   for(let i = 0; remaining; i+=1000){
     const query = `{
-      projects(first: 1000, skip: ${i}, orderBy: projectId){
+      projects(first: 1000, skip: ${i}){
         projectId
         pv
         handle
         metadataUri
         currentBalance
+        totalPaid
         createdAt
         trendingScore
       }
@@ -33,7 +34,7 @@ async function main() {
     }).catch(e => { throw new Error('Error querying Subgraph: ' + e) })
   } 
 
-  let ipfsPromises = []
+  const ipfsPromises = []
   for(const i in docs){
     ipfsPromises.push(fetch(ipfs + docs[i].metadataUri + '?' + new URLSearchParams({
       pinataGatewayToken: process.env.PINATA_GATEWAY_TOKEN,
