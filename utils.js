@@ -18,6 +18,7 @@ export async function querySubgraphProjects(block) {
         totalPaid
         createdAt
         trendingScore
+        deployer
       }
     }`
 

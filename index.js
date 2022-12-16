@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 import { ipfs } from './constants.js'
 import { querySubgraphProjects, querySepanaProjects, getLatestBlock, deleteSepanaIds, writeSepanaDocs } from './utils.js'
-import assert from 'assert'
 dotenv.config()
 
 async function main() {
@@ -19,6 +18,7 @@ async function main() {
       || el.totalPaid !== r.totalPaid
       || el.createdAt !== r.createdAt
       || el.trendingScore !== r.trendingScore
+      || el.deployer !== r.deployer
     )
   })
 
