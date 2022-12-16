@@ -1,6 +1,6 @@
-
-require('dotenv').config()
-const sepana = 'https://api.sepana.io/v1/'
+import dotenv from 'dotenv'
+import { sepana } from './constants.js'
+dotenv.config()
 
 async function main() {
   const results = await fetch(sepana + 'engine/data/delete',{
