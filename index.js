@@ -1,13 +1,13 @@
-require('dotenv').config()
+import dotenv from 'dotenv'
+import { ipfs, sepana } from './constants.js'
+import { getLastUpdated, getLatestBlock, querySubgraphProjects } from './utils.js'
 
-const ipfs = 'https://jbx-mainnet.mypinata.cloud/ipfs/'
-const subgraph = 'https://api.studio.thegraph.com/query/30654/mainnet-dev/0.7.0'
-const sepana = 'https://api.sepana.io/v1/'
+dotenv.config()
 
 async function main() {
-  const lastUpdated = getLastUpdated()
-  const current = queryProjects()
-  const previous = await queryProjects(lastUpdated ? lastUpdated : 12833329)
+  const lastUpdated = await getLastUpdated()
+  const current = querySubgraphProjects()
+  const previous = await querySubgraphProjects(lastUpdated ? lastUpdated : 12833329)
   
   let docs = (await current).filter((el, i) => 
     el.handle !== previous[i]?.handle ||
@@ -20,12 +20,17 @@ async function main() {
   const ipfsPromises = []
   const now = await getLatestBlock()
   for(const i in docs){
+    if(i % 50 === 0)
+      await new Promise(r => setTimeout(r, 2000));
     docs[i].lastUpdated = now
     ipfsPromises.push(fetch(ipfs + docs[i].metadataUri)
-    .then(res => { 
-      try{ return(res.json()) } catch { throw new Error(res.text()) }
+    .then(async(res) => {
+      if (!res.ok)
+        throw new Error(`${res.status}: ${await res.text()}`);
+      return(res.json())
     })
     .then(metadata => {
+      console.log(docs[i].id + ': ' + metadata?.name)
       docs[i].name = metadata?.name
       docs[i].description = metadata?.description
       docs[i].logoUri = metadata?.logoUri
@@ -35,7 +40,7 @@ async function main() {
   }
 
   Promise.all(ipfsPromises).then(() => {
-    fetch(sepana + 'engine/data/delete', {
+    return fetch(sepana + 'engine/data/delete', {
       method: 'DELETE',
       headers: { 'x-api-key': process.env.SEPANA_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -50,94 +55,18 @@ async function main() {
       }),
     })
   })
-  .then(() => {
+  .then(async() => {
     while(docs[0]){
+      await new Promise(r => setTimeout(r, 2000));
       fetch(sepana + 'engine/insert_data',{
         headers: { 'x-api-key': process.env.SEPANA_API_KEY, 'Content-Type': 'application/json' },
         method: 'POST',
         body: JSON.stringify({ engine_id: process.env.SEPANA_ENGINE_ID,  docs: docs.splice(0, 500) }),
-      })
+      }).then(res => res.json())
+      .then(json => console.log(JSON.stringify(json)))
     }
   })
   .catch(e => console.log(e))
-}
-
-async function queryProjects(block) {
-  let docs = []
-  let remaining = true
-
-  for(let i = 0; remaining; i+=1000){
-    const query = `{
-      projects(first: 1000, orderBy: createdAt, skip: ${i}${block? `, block: {number: ${block}}` : ''}){
-        id
-        projectId
-        pv
-        handle
-        metadataUri
-        currentBalance
-        totalPaid
-        createdAt
-        trendingScore
-      }
-    }`
-
-    await fetch(subgraph, {
-      body: JSON.stringify({ query }),
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.json())
-    .then(json => {
-      json.data?.projects[0]
-      ? docs = docs.concat(json.data.projects)
-      : remaining = false
-    }).catch(e => { throw new Error('Error querying Subgraph: ' + e) })
-  } 
-
-  return(docs)
-}
-
-async function getLatestBlock() {
-  const query = `{
-    _meta{
-      block {
-        number
-      }
-    }
-  }`
-
-  const json = await fetch(subgraph, {
-    body: JSON.stringify({ query }),
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-  }).then(res => res.json())
-  .catch(e => { throw new Error(e) })
-
-  return(json.data._meta.block.number)
-}
-
-async function getLastUpdated() {
-  const results = await fetch(sepana + 'search',{
-    headers: { 'x-api-key': process.env.SEPANA_API_KEY, 'Content-Type': 'application/json' },
-    method: 'POST',
-    body: JSON.stringify({ 
-      engine_ids: [ process.env.SEPANA_ENGINE_ID ],  
-      filter: {
-        match_all: {},
-      },
-      sort: [
-        {
-          lastUpdated: {
-            order: "desc",
-          },
-        },
-      ],
-      size: 1,
-      page: 0,
-    }),
-  }).then(res => res.json())
-  .catch(e => {throw new Error(e)})
-
-  return(results.hits?.hits[0]?._source?.lastUpdated)
 }
 
 main()
