@@ -123,6 +123,6 @@ export async function writeSepanaDocs(docs) {
     }).then(res => res.json())
     .then(json => console.log(JSON.stringify(json)))
     if(docs[0])
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 3000));
   }
 }

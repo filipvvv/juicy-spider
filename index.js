@@ -41,8 +41,8 @@ async function main() {
     .catch(e => {throw new Error(`Error with CID ${docs[i].metadataUri}: ${e}`)})
     )
 
-    if(i && i % 50 === 0)
-      await new Promise(r => setTimeout(r, 2000));
+    if(i && i % 100 === 0)
+      await new Promise(r => setTimeout(r, 500));
   }
 
   await Promise.all(ipfsPromises)
