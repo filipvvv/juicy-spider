@@ -3,6 +3,7 @@ import { ipfs } from './constants.js'
 import { querySubgraphProjects, querySepanaProjects, getLatestBlock, deleteSepanaIds, writeSepanaDocs } from './utils.js'
 dotenv.config()
 
+// Synchronizes the Sepana engine with the latest Juicebox Subgraph/IPFS data
 async function main() {
   const sep = await querySepanaProjects()
 
@@ -42,7 +43,7 @@ async function main() {
     )
 
     if(i && i % 100 === 0)
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 750));
   }
 
   await Promise.all(ipfsPromises)

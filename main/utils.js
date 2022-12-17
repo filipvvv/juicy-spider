@@ -2,13 +2,14 @@ import { subgraph, sepana } from './constants.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+// Exhaustively query all Juicebox projects at a block. If block is undefined, queries most recent block.
 export async function querySubgraphProjects(block) {
   let docs = []
   let remaining = true
 
   for(let i = 0; remaining; i+=1000){
     const query = `{
-      projects(first: 1000, orderBy: createdAt, skip: ${i}${block? `, block: {number: ${block}}` : ''}){
+      projects(first: 1000, orderBy: createdAt, skip: ${i}${block ? `, block: {number: ${block}}` : ''}){
         id
         projectId
         pv
@@ -37,6 +38,7 @@ export async function querySubgraphProjects(block) {
   return(docs)
 }
 
+// Gets latest block on juice-subgraph.
 export async function getLatestBlock() {
   const query = `{
     _meta{
@@ -56,32 +58,8 @@ export async function getLatestBlock() {
   return(json.data._meta.block.number)
 }
 
-export async function getLastUpdated() {
-  const results = await fetch(sepana + 'search',{
-    headers: { 'x-api-key': process.env.SEPANA_API_KEY, 'Content-Type': 'application/json' },
-    method: 'POST',
-    body: JSON.stringify({ 
-      engine_ids: [ process.env.SEPANA_ENGINE_ID ],  
-      filter: {
-        match_all: {},
-      },
-      sort: [
-        {
-          lastUpdated: {
-            order: "desc",
-          },
-        },
-      ],
-      size: 1,
-      page: 0,
-    }),
-  }).then(res => res.json())
-  .catch(e => {throw new Error(e)})
-
-  return(results.hits?.hits[0]?._source?.lastUpdated)
-}
-
-// Update this before we hit 10k projects
+// Exhaustively queries all Sepana records.
+// Update this before we hit 10k projects (size: 10000).
 export async function querySepanaProjects() {
   return fetch(sepana + 'search',{
     headers: { 'x-api-key': process.env.SEPANA_API_KEY, 'Content-Type': 'application/json' },
@@ -97,6 +75,7 @@ export async function querySepanaProjects() {
   }).then(res => res.json())
 }
 
+// Deletes Sepana records with ids inside parameter array.
 export async function deleteSepanaIds(ids) {
   return fetch(sepana + 'engine/data/delete', {
     method: 'DELETE',
@@ -114,6 +93,7 @@ export async function deleteSepanaIds(ids) {
   }).then(res => res.json())
 }
 
+// Writes docs to Sepana engine in groups of 500.
 export async function writeSepanaDocs(docs) {
   while(docs[0]){
     fetch(sepana + 'engine/insert_data',{
