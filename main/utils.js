@@ -87,27 +87,6 @@ export async function querySepanaProjects() {
   }).then((res) => res.json());
 }
 
-// Deletes Sepana records with ids inside parameter array.
-export async function deleteSepanaIds(ids) {
-  return fetch(sepana + "engine/data/delete", {
-    method: "DELETE",
-    headers: {
-      "x-api-key": process.env.SEPANA_API_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      engine_id: process.env.SEPANA_ENGINE_ID,
-      delete_query: {
-        query: {
-          terms: {
-            id: ids,
-          },
-        },
-      },
-    }),
-  }).then((res) => res.json());
-}
-
 // Writes docs to Sepana engine in groups of 500.
 export async function writeSepanaDocs(docs) {
   while (docs[0]) {

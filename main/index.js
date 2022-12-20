@@ -4,7 +4,6 @@ import {
   querySubgraphProjects,
   querySepanaProjects,
   getLatestBlock,
-  deleteSepanaIds,
   writeSepanaDocs,
 } from "./utils.js";
 dotenv.config();
@@ -14,7 +13,7 @@ async function main() {
   const sep = await querySepanaProjects();
 
   let docs = (await querySubgraphProjects()).filter((el) => {
-    let r = sep.hits.hits.find((val) => el.id === val._source.id)?._source;
+    let r = sep.hits.hits.find((val) => el.id === val._id)?._source;
     return (
       !r ||
       el.id !== r.id ||
@@ -33,6 +32,7 @@ async function main() {
   const ipfsPromises = [];
   const now = await getLatestBlock();
   for (const i in docs) {
+    docs[i]._id = docs[i].id;
     docs[i].lastUpdated = now;
     ipfsPromises.push(
       fetch(ipfs + docs[i].metadataUri)
@@ -55,7 +55,6 @@ async function main() {
   }
 
   await Promise.all(ipfsPromises);
-  await deleteSepanaIds(docs.map((e) => e.id));
   await writeSepanaDocs(docs);
 }
 

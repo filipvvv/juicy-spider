@@ -1,6 +1,8 @@
 # Juicy Spider
 
-![juicy spider](https://media.discordapp.net/attachments/868159148544634880/1054574511946727424/Juicy_spider.png?width=465&height=465)
+<p align="center">
+    <img width="200" src="https://media.discordapp.net/attachments/868159148544634880/1054574511946727424/Juicy_spider.png?width=465&height=465" alt="A Juicy Spider">
+</p>
 
 **Juicy Spider** is a [Juicebox](https://juicebox.money) project crawler built for [Sepana](https://sepana.io/). You can use its Sepana engine to search by project:
 
@@ -52,10 +54,11 @@ To learn more about querying Sepana, read:
 
 ## Running Your Own Engine
 
-Open `.env` and add your Sepana engine's ID to `SEPANA_ENGINE_ID` and your Sepana API key to `SEPANA_API_KEY`. Your API key must have `Admin` ACL Permission over your engine.
+Open `.env` and add your Sepana engine's ID to `SEPANA_ENGINE_ID` and your Sepana API key to `SEPANA_API_KEY`. Your API key must have `Read and Write` ACL Permission over your engine.
 
 - Run `node main/` to synchronize your database with Subgraph and IPFS Juicebox Project data.
 - To reset your engine, run `node misc/reset.js`.
+- To print the contents of your engine to stdout, run `node misc/stringify.js`.
 
 ## About Juicebox
 
