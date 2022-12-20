@@ -1,5 +1,7 @@
 # Juicy Spider
 
+![juicy spider](https://media.discordapp.net/attachments/868159148544634880/1054574511946727424/Juicy_spider.png?width=465&height=465)
+
 **Juicy Spider** is a [Juicebox](https://juicebox.money) project crawler built for [Sepana](https://sepana.io/). You can use its Sepana engine to search by project:
 
 - ID
