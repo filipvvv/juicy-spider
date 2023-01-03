@@ -1,3 +1,4 @@
-import { querySepanaProjects } from "../main/utils";
+import { querySepanaProjects } from "../main/utils.js";
+import * as fs from 'fs';
 
-querySepanaProjects.then(res => console.log(JSON.stringify(res)))
+querySepanaProjects().then(json => fs.writeFileSync("sepana-records.json", JSON.stringify(json)))

@@ -11,6 +11,7 @@ async function main() {
   const method = await rl.question(`Select a query type:
   1. Basic text search.
   2. Example juicebox.money search.
+  3. Related projects search. Your query should be a project ID (e.g. 2-241).
   > `);
   const query = await rl.question(`Enter your query:
   > `);
@@ -43,6 +44,31 @@ async function main() {
         },
       });
       break;
+    case "3":
+      sepanaQuery({
+        function_score: {
+          query: {
+            more_like_this: {
+              fields: ["name^2", "handle^2", "description"],
+              like: [
+                {
+                  _id: query
+                },
+              ],
+              min_term_freq: "1",
+              max_query_terms: "25",
+            },
+          },
+          script_score: {
+            script: {
+              source:
+                "Math.max(0, doc['totalPaid.keyword'].value.length() - 17) + 3 * Math.max(0, doc['trendingScore.keyword'].value.length() - 18)",
+            },
+          },
+          boost_mode: "multiply",
+          min_score: "10",
+        },
+      });
   }
 }
 
